@@ -22,7 +22,6 @@
       padding: 20px;
     }
 
-    /* ===== Лэйаут: слева форма, справа карточка (на десктопе) ===== */
     .controls {
       width: 420px;
       background: #111;
@@ -30,12 +29,13 @@
       border-radius: 10px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       position: sticky;
       top: 12px;
       max-height: calc(100vh - 24px);
       overflow: auto;
     }
+
     label { font-size: 14px; color: #bbb; }
     input, select {
       background: #1a1a1a;
@@ -47,6 +47,7 @@
       outline: none;
       width: 100%;
     }
+
     button {
       background: #00bfff;
       border: none;
@@ -58,15 +59,11 @@
     }
     button:hover { background: #0099cc; }
 
-    /* ===== Сцена для масштабирования ===== */
     .stage {
-      /* контейнер под карточку; задаём ширину по контейнеру */
       width: min(1188px, 100%);
-      /* подстраиваем высоту скриптом под масштаб */
       position: relative;
     }
 
-    /* Исходные размеры карточки остаются константами */
     #card {
       width: 1188px;
       height: 1392px;
@@ -75,19 +72,15 @@
       background-repeat: no-repeat;
       background-position: center;
       background-color: #000;
-      position: absolute;   /* важно: внутри stage */
+      position: absolute;
       top: 0;
       left: 0;
-
-      /* масштабируем всю карточку целиком */
       transform-origin: top left;
     }
 
     .overlay {
       position: absolute;
       inset: 0;
-      color: white;
-      font-weight: 500;
     }
 
     .date-shared {
@@ -98,6 +91,7 @@
       color: #6E7684;
       letter-spacing: 0.045em;
     }
+
     .date-range {
       position: absolute;
       top: 550px;
@@ -106,15 +100,17 @@
       color: #6E7684;
       letter-spacing: 0.045em;
     }
+
     .percent {
       position: absolute;
       top: 645px;
       left: 50px;
       font-size: 75px;
-      color: #00BF67;     /* твой финальный зелёный */
+      color: #00BF67;
       font-weight: 700;
       letter-spacing: 0.03em;
     }
+
     .usdt {
       position: absolute;
       top: 746px;
@@ -125,7 +121,6 @@
       letter-spacing: 0.03em;
     }
 
-    /* ===== Мобильная адаптация ===== */
     @media (max-width: 992px) {
       body {
         flex-direction: column;
@@ -144,9 +139,9 @@
     }
   </style>
 </head>
+
 <body>
 
-  <!-- ФОРМА -->
   <div class="controls">
     <label>Дата "Поделились"</label>
     <input id="inputDateShared" placeholder="2025-09-24 03:21:28">
@@ -160,8 +155,9 @@
     <label>Прибыль в USDT</label>
     <input id="inputUSDT" placeholder="+23 428,24 USDT">
 
-    <label>Реферальный код</label>
+    <label>Реферальный код (1–12)</label>
     <select id="refSelect">
+      <option value="">— выбрать —</option>
       <option value="1fq51">1</option>
       <option value="1uoHK">2</option>
       <option value="1RWKx">3</option>
@@ -177,10 +173,9 @@
     </select>
 
     <button onclick="updateCard()">Обновить</button>
-    <button onclick="takeScreenshot()">Скачать картинку</button>
+    <button onclick="takeScreenshot()">Скачать</button>
   </div>
 
-  <!-- СЦЕНА + КАРТОЧКА -->
   <div class="stage" id="stage">
     <div id="card">
       <div class="overlay">
@@ -189,55 +184,56 @@
         <div class="percent" id="percent"></div>
         <div class="usdt" id="usdt"></div>
 
-        <!-- реф-код справа внизу (после фразы на фоне) -->
+        <!-- Реф-код: подправлено положение -->
         <div id="refText"
-             style="position:absolute; left:455px; top:1238px; font-size:45px; font-weight:700; letter-spacing:.02em; color:#fff;">
+          style="position:absolute; left:485px; top:1228px; font-size:45px; font-weight:700; letter-spacing:.02em; color:#fff;">
         </div>
 
-        <!-- QR справа внизу -->
+        <!-- QR -->
         <img id="qrImg"
-             src=""
-             alt=""
-             style="position:absolute; right:52px; bottom:42px; width:144px; height:144px; object-fit:contain;"/>
+          src=""
+          style="position:absolute; right:52px; bottom:42px; width:144px; height:144px; object-fit:contain;">
       </div>
     </div>
   </div>
 
   <script>
-    // ====== Обновление текстов ======
-    function updateCard() {
-      document.getElementById('dateShared').innerText = document.getElementById('inputDateShared').value;
-      document.getElementById('dateRange').innerText  = document.getElementById('inputDateRange').value;
-      document.getElementById('percent').innerText    = document.getElementById('inputPercent').value;
-      document.getElementById('usdt').innerText       = document.getElementById('inputUSDT').value;
-
-      const refId   = document.getElementById('refSelect').value;
-      const refText = document.getElementById('refSelect').selectedOptions[0].textContent; // 1..12
-      document.getElementById('refText').innerText = refText === '' ? '' : refText;
-
-      // путь к QR: рядом с index.html лежат PNG (как ты уже сделал)
-      document.getElementById('qrImg').src = refId ? `./qrcodes/${refId}.png` : '';
-    }
-
-    // ====== Масштабирование карточки под ширину экрана ======
     const BASE_W = 1188;
     const BASE_H = 1392;
-    const stage  = document.getElementById('stage');
-    const card   = document.getElementById('card');
+
+    function updateCard() {
+      document.getElementById('dateShared').innerText = document.getElementById('inputDateShared').value;
+      document.getElementById('dateRange').innerText = document.getElementById('inputDateRange').value;
+      document.getElementById('percent').innerText = document.getElementById('inputPercent').value;
+      document.getElementById('usdt').innerText = document.getElementById('inputUSDT').value;
+
+      const refId = document.getElementById('refSelect').value;
+      if (refId) {
+        document.getElementById('refText').innerText = refId.toUpperCase();
+        document.getElementById('qrImg').src = `./qrcodes/${refId}.png`;
+      } else {
+        document.getElementById('refText').innerText = '';
+        document.getElementById('qrImg').src = '';
+      }
+    }
 
     function fitCard() {
-      const w = stage.clientWidth;                // доступная ширина
-      const scale = Math.min(1, w / BASE_W);      // не увеличиваем сверх 1
+      const stage = document.getElementById('stage');
+      const card = document.getElementById('card');
+      const w = stage.clientWidth;
+      const scale = Math.min(1, w / BASE_W);
       card.style.transform = `scale(${scale})`;
-      stage.style.height = `${BASE_H * scale}px`; // сохраняем пропорции контейнера
+      stage.style.height = `${BASE_H * scale}px`;
     }
 
     window.addEventListener('load', fitCard);
     window.addEventListener('resize', fitCard);
 
-    // ====== Скриншот в полном качестве ======
     function takeScreenshot() {
-      const prev = card.style.transform;       // 1) временно убираем масштаб
+      const stage = document.getElementById('stage');
+      const card = document.getElementById('card');
+      const old = card.style.transform;
+
       card.style.transform = 'none';
       stage.style.height = `${BASE_H}px`;
 
@@ -247,19 +243,11 @@
         link.href = canvas.toDataURL("image/png");
         link.click();
 
-        // 2) возвращаем масштаб
-        card.style.transform = prev;
+        card.style.transform = old;
         fitCard();
       });
     }
-
-    // начальные значения, чтобы сразу увидеть пример
-    document.getElementById('inputDateShared').value = '2025-08-12 18:16:34';
-    document.getElementById('inputDateRange').value  = '2025/09/18 – 2025/09/25 (UTC+8)';
-    document.getElementById('inputPercent').value    = '+165,14%';
-    document.getElementById('inputUSDT').value       = '+9 014,1 USDT';
-    document.getElementById('refSelect').value       = '1fq51';
-    updateCard();
   </script>
+
 </body>
 </html>
